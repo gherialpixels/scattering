@@ -72,48 +72,45 @@ if __name__ == '__main__':
     touch_time = []
     beam_time = []
     dist_time = []
-    plot_time = []
-    objs_time = []
+    # plot_time = []
+    # objs_time = []
 
     prog = experiment.Programme('mouse')
 
     # game loop
-    while True: #time.time() - start_time < 5:
+    while time.time() - start_time < 10:
         # mouse position
         flashlight_dir = prog.returnFluxDirection()
-        # mouse_time.append(time.time())
-        # flashlight_len = 30
-        # obj_flashlight_dir = draw.Line((x, y), flashlight_len*flashlight_dir, draw.colours['magenta'], 2)
+        mouse_time.append(time.time())
 
         # objects
         touched_circles = s.brute_touched_circles(flashlight_dir)
-        # touch_time.append(time.time())
+        touch_time.append(time.time())
 
         scattered_beams = s.scattered_beams(flashlight_dir, touched_circles)
-        # beam_time.append(time.time())
+        beam_time.append(time.time())
 
         # avg_scat_beam = sum(list(map(draw.Line.getGradient, scattered_beams))) / len(scattered_beams)
         # obj_avg_beam = draw.Line((space.WIDTH / 2, space.HEIGHT / 2), 5*avg_scat_beam, draw.colours['#99FF99'], 3)
 
-        objects = [s] + touched_circles + scattered_beams + [text]
+        objects = [s] + touched_circles + scattered_beams
 
-        ad = analysis.AngleDistribution(flashlight_dir, scattered_beams, 0.1)
+        # ad = analysis.AngleDistribution(flashlight_dir, scattered_beams, 0.1)
         # dist_time.append(time.time())
-        # plt.pause(0.1)
-        ad.draw()
+
+        # ad.draw()
         # plot_time.append(time.time())
 
         display.event_catcher()
         display.paint(objects)
-        # objs_time.append(time.time())
+        # objs_time.append(time.time())
 
     pygame.quit()
 
     final_time = time.time()
 
-    # timeHandle = analysis.TimeHandler(start_time, final_time, mouse_time,
-    #        touch_time, beam_time, dist_time, plot_time, objs_time)
+    timeHandle = analysis.TimeHandler(start_time, final_time, mouse_time, touch_time, beam_time)
 
-    # timeHandle.print_time_diffs()
+    timeHandle.print_time_diffs()
 
     quit()

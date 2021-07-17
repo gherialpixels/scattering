@@ -11,8 +11,8 @@ def get_particle_set(pos, radius, dir, perp_dir):
     num_detec = 15
 
     U = np.array([dir, perp_dir])
-    particle_set = set([np.dot(U, radius*np.array([np.cos(k*np.pi/(num_detec-1)),
-            np.sin(k*np.pi/(num_detec-1))])) + pos for k in range(num_detec)])
+    particle_set = set([np.dot(U, radius*np.array([np.cos(k*np.pi/(num_detec-1)), np.sin(k*np.pi/(num_detec-1))])) + pos
+                        for k in range(num_detec)])
 
     return particle_set
 
@@ -61,12 +61,12 @@ class Scatterer(object):
         u = space.unit(self.dcurve(point)) # tangent to curve
         v = np.dot(np.array([[0, -1], [1, 0]]), u) # normal to surface
 
-        return np.array([u, v]).T # change of basis matrix
+        return np.array([u, v]).T  # change of basis matrix
 
     def tangent_beams(self):
         points = self.get_domain_points()
         lines = []
-        #line_len = 50
+
         for p in points:
             lines.append(draw.Line(self.curve(p), self.dcurve(p), draw.colours['magenta']))
 
@@ -160,7 +160,6 @@ class Scatterer(object):
         draw.Circle(d_points[1], c_points[1], touched_circle_radius, draw.colours[touched_circle_colour]),
         draw.Circle(d_points[-1], c_points[-1], touched_circle_radius, draw.colours[touched_circle_colour])]
 
-
         for j in range(len(c_points)//2):
             for k in range(2):
                 dot = np.dot(perp_dir, c_points[j*(-1)**k])
@@ -173,10 +172,6 @@ class Scatterer(object):
                     rangeMin = dot
                     touched_points.append(draw.Circle(d_points[j*(-1)**k],
                     c_points[j*(-1)**k], touched_circle_radius, draw.colours[touched_circle_colour]))
-
-
-        #print("(", rangeMin, ", ", rangeMax, ")")
-
 
         return touched_points
 
