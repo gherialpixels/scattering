@@ -122,63 +122,37 @@ class Scatterer(object):
 
         return touched_points
 
-    def brute_touched_circles(self, dir):
+    def brute_touched_circles(self, vec):
         touched_circle_radius = 5
         touched_circle_colour = '#FF9933'
 
-        perp_dir = np.dot(np.array([[0, 1], [-1, 0]]), dir)
+        perp_vec = np.dot(np.array([[0, -1], [1, 0]]), vec)
 
-        mapping = self.get_mapping()
+        mapping = self.get_shifted_mapping(space.angle(-vec))
 
         d_points, c_points = list(zip(*mapping))
 
-        centre = np.array([space.WIDTH/2, space.HEIGHT/2])
-        centered_curve_points = [tuple(c_point-centre) for c_point in c_points]
+        touched_curve_points = [draw.Circle(d_points[0], c_points[0], touched_circle_radius, touched_circle_colour),
+                                draw.Circle(d_points[1], c_points[1], touched_circle_radius, touched_circle_colour),
+                                draw.Circle(d_points[-1], c_points[-1], touched_circle_radius, touched_circle_colour)]
 
-        temp = [(abs(np.dot(perp_dir, point)), point) for point in centered_curve_points]
+        centered_c_points = c_points - space.centre
+        range_min = np.dot(perp_vec, centered_c_points[1])
+        range_max = np.dot(perp_vec, centered_c_points[-1])
 
-        sorted_temp = sorted(temp)
+        for i in range(2, len(c_points)):
+            index = (1 + (i // 2)) * (-1) ** (i % 2)
+            dot = np.dot(perp_vec, centered_c_points[index])
+            if dot >= range_max:
+                range_max = dot
+                touched_curve_points.append(
+                    draw.Circle(d_points[i], c_points[i], touched_circle_radius, touched_circle_colour))
+            elif dot <= range_min:
+                range_min = dot
+                touched_curve_points.append(
+                    draw.Circle(d_points[i], c_points[i], touched_circle_radius, touched_circle_colour))
 
-        eps = 16
-        small_zones = sorted_temp[:eps]
-
-
-        # start point
-        new_temp = [(np.dot(dir, tuple[1]), tuple[1]) for tuple in small_zones]
-        start_curve_point = sorted(new_temp)[0][1]
-        start_index = centered_curve_points.index(tuple(start_curve_point))
-
-        c_points = c_points[start_index:] + c_points[:start_index]
-        d_points = d_points[start_index:] + d_points[:start_index]
-
-        # initialise ranges
-        rangeMin = np.dot(perp_dir, c_points[-1])
-        rangeMax = np.dot(perp_dir, c_points[1])
-
-        # define touched points
-        touched_points = [draw.Circle(d_points[0], c_points[0], touched_circle_radius, draw.colours[touched_circle_colour]),
-        draw.Circle(d_points[1], c_points[1], touched_circle_radius, draw.colours[touched_circle_colour]),
-        draw.Circle(d_points[-1], c_points[-1], touched_circle_radius, draw.colours[touched_circle_colour])]
-
-
-        for j in range(len(c_points)//2):
-            for k in range(2):
-                dot = np.dot(perp_dir, c_points[j*(-1)**k])
-                if dot >= rangeMax:
-                    rangeMax = dot
-                    touched_points.append(draw.Circle(d_points[j*(-1)**k],
-                    c_points[j*(-1)**k], touched_circle_radius, draw.colours[touched_circle_colour]))
-
-                elif dot <= rangeMin:
-                    rangeMin = dot
-                    touched_points.append(draw.Circle(d_points[j*(-1)**k],
-                    c_points[j*(-1)**k], touched_circle_radius, draw.colours[touched_circle_colour]))
-
-
-        #print("(", rangeMin, ", ", rangeMax, ")")
-
-
-        return touched_points
+        return touched_curve_points
 
     def particle_touched_circles(self, dir, r0, r1):
         touched_circle_radius = 5
@@ -285,6 +259,13 @@ class Scatterer(object):
         # precision of representationn given by N
         N = 1000
         t = lambda n : self.rangeA + (self.rangeB - self.rangeA) * (n / N)
+
+        points = [(t(n), (int(self.curve(t(n))[0]), int(self.curve(t(n))[1]))) for n in range(N)]
+        return points
+
+    def get_shifted_mapping(self, phase):
+        N = 1000
+        t = lambda n: self.rangeA + (self.rangeB - self.rangeA) * (n / N) + phase
 
         points = [(t(n), (int(self.curve(t(n))[0]), int(self.curve(t(n))[1]))) for n in range(N)]
         return points
