@@ -146,11 +146,11 @@ class Scatterer(object):
             if dot >= range_max:
                 range_max = dot
                 touched_curve_points.append(
-                    draw.Circle(d_points[i], c_points[i], touched_circle_radius, touched_circle_colour))
+                    draw.Circle(d_points[index], c_points[index], touched_circle_radius, touched_circle_colour))
             elif dot <= range_min:
                 range_min = dot
                 touched_curve_points.append(
-                    draw.Circle(d_points[i], c_points[i], touched_circle_radius, touched_circle_colour))
+                    draw.Circle(d_points[index], c_points[index], touched_circle_radius, touched_circle_colour))
 
         return touched_curve_points
 
