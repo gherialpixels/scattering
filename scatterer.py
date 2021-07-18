@@ -51,6 +51,11 @@ class Scatterer(object):
         self.rangeA = mode.rangeA
         self.rangeB = mode.rangeB
 
+        self.n = 1000
+
+        self.domain_points = [self.rangeA + (self.rangeB - self.rangeA) * (k / self.n) for k in range(self.n)]
+        self.curve_points = [self.curve(point) for point in self.domain_points]
+
     def surface_vectors(self, point):
         # This function requires a numerical derivative
         """
@@ -128,9 +133,10 @@ class Scatterer(object):
 
         perp_vec = np.dot(np.array([[0, -1], [1, 0]]), vec)
 
-        mapping = self.get_shifted_mapping(space.angle(-vec))
-
-        d_points, c_points = list(zip(*mapping))
+        angle = space.angle(-vec)
+        index = int(angle // ((self.rangeB - self.rangeA) / self.n))
+        c_points = self.curve_points[index:] + self.curve_points[:index]
+        d_points = self.domain_points[index:] + self.domain_points[:index]
 
         touched_curve_points = [draw.Circle(d_points[0], c_points[0], touched_circle_radius, touched_circle_colour),
                                 draw.Circle(d_points[1], c_points[1], touched_circle_radius, touched_circle_colour),
