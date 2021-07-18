@@ -52,25 +52,16 @@ class Scatterer(object):
         self.rangeB = mode.rangeB
 
         self.n = 1000
-
-        self.domain_points = [self.rangeA + (self.rangeB - self.rangeA) * (k / self.n) for k in range(self.n)]
+        self.step = (self.rangeB - self.rangeA) / self.n
+        self.domain_points = [self.rangeA + k * self.step for k in range(self.n)]
         self.curve_points = [self.curve(point) for point in self.domain_points]
         self.tangents = [self.dcurve(point) for point in self.domain_points]
 
-    def surface_vectors(self, point):
-        # This function requires a numerical derivative
-        """
-        if not (self.rangeA <= point <= self.rangeB):
-            raise ValueError('Point %f was not inside the range [%f, %f]' %
-                (point, self.rangeA, self.rangeB))
-        """
-        u = space.unit(self.dcurve(point)) # tangent to curve
-        v = np.dot(np.array([[0, -1], [1, 0]]), u) # normal to surface
-
-        return np.array([u, v]).T  # change of basis matrix
+        self.surface_vectors = [np.array([space.unit(tangent), np.dot(space.rotation_matrix(np.pi/2),
+                                space.unit(tangent))]).T for tangent in self.tangents]
 
     def tangent_beams(self):
-        points = self.get_domain_points()
+        points = self.domain_points
         lines = []
 
         for p in points:
@@ -79,9 +70,9 @@ class Scatterer(object):
         return lines
 
     def moving_surface_vectors(self, t):
-        vecs = self.surface_vectors(t % (2 * np.pi)).T
+        vectors = self.surface_vectors[int(t // self.step)].T
         arrow_len = 50
-        return [draw.Line(self.curve(t), arrow_len*vec, draw.colours['red'], 2) for vec in vecs]
+        return [draw.Line(self.curve(t), arrow_len*vec, draw.colours['red'], 2) for vec in vectors]
 
     def scattered_beams(self, vec, touched_circles):
         """
@@ -100,27 +91,25 @@ class Scatterer(object):
 
         """
 
-        scatter_domain_points = list(map(draw.Circle.getDomainPoint, touched_circles))
-
         lines = []
         line_len = 100
 
-        for sp in scatter_domain_points:
-            cob = self.surface_vectors(sp)
+        for c in touched_circles:
+            cob = self.surface_vectors[int(c.domainPoint // self.step)]
             a = vec
             b = np.dot(cob @ np.array([[1, 0], [0, -1]]) @ cob.T, a)
-            lines.append(draw.Line(self.curve(sp), line_len*b, draw.colours['light yellow']))
+            lines.append(draw.Line(self.curve(c.domainPoint), line_len*b, draw.colours['light yellow']))
 
         return lines
 
-    def local_touched_circles(self, dir):
+    def local_touched_circles(self, vec):
         touched_circle_radius = 5
 
-        scatter_points = self.get_domain_points()
+        scatter_points = self.domain_points
         touched_points = []
         for sp in scatter_points:
-            cob = self.surface_vectors(sp)
-            a = dir
+            cob = self.surface_vectors[int(sp // self.step)]
+            a = vec
             b = np.dot(cob @ np.array([[1, 0], [0, -1]]) @ cob.T, a)
             if np.dot(b, cob.T[1]) <= 0:
                 touched_points.append(draw.Circle(sp, self.curve(sp), touched_circle_radius, draw.colours['yellow']))
@@ -277,7 +266,7 @@ class Scatterer(object):
         return points
 
     def draw(self, screen):
-        points = self.get_curve_points()
+        points = self.curve_points
         for point in points:
             # screen.set_at(point, (0,0,0))
             pygame.draw.circle(screen, draw.colours['black'], point, 1.5)
