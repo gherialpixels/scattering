@@ -54,3 +54,7 @@ def returnLineIntersection(part_pos, part_dir, Line2):
 
     t = np.dot(np.linalg.inv(U), C)
     return t[0] * grad1 + pos1
+
+
+def rotation_matrix(theta):
+    return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
