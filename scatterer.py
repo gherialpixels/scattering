@@ -55,6 +55,7 @@ class Scatterer(object):
 
         self.domain_points = [self.rangeA + (self.rangeB - self.rangeA) * (k / self.n) for k in range(self.n)]
         self.curve_points = [self.curve(point) for point in self.domain_points]
+        self.tangents = [self.dcurve(point) for point in self.domain_points]
 
     def surface_vectors(self, point):
         # This function requires a numerical derivative
@@ -82,7 +83,7 @@ class Scatterer(object):
         arrow_len = 50
         return [draw.Line(self.curve(t), arrow_len*vec, draw.colours['red'], 2) for vec in vecs]
 
-    def scattered_beams(self, dir, touched_circles):
+    def scattered_beams(self, vec, touched_circles):
         """
         beams coming from left-hand side (fixed direction). In future,
         treat case where the direction may change (higher order collisions)
@@ -99,15 +100,14 @@ class Scatterer(object):
 
         """
 
-        scatter_points = list(map(draw.Circle.getDomainPoint, touched_circles))
-        # scatter_points = self.get_domain_points()
+        scatter_domain_points = list(map(draw.Circle.getDomainPoint, touched_circles))
 
         lines = []
         line_len = 100
 
-        for sp in scatter_points:
+        for sp in scatter_domain_points:
             cob = self.surface_vectors(sp)
-            a = dir
+            a = vec
             b = np.dot(cob @ np.array([[1, 0], [0, -1]]) @ cob.T, a)
             lines.append(draw.Line(self.curve(sp), line_len*b, draw.colours['light yellow']))
 
@@ -146,7 +146,6 @@ class Scatterer(object):
         range_min = np.dot(perp_vec, centered_c_points[1])
         range_max = np.dot(perp_vec, centered_c_points[-1])
 
-
         for i in range(2, len(c_points)):
             index = (1 + (i // 2)) * (-1) ** (i % 2)
             dot = np.dot(perp_vec, centered_c_points[index])
@@ -160,7 +159,6 @@ class Scatterer(object):
                     draw.Circle(d_points[index], c_points[index], touched_circle_radius, touched_circle_colour))
 
         return touched_curve_points
-
 
     def particle_touched_circles(self, dir, r0, r1):
         touched_circle_radius = 5
