@@ -146,6 +146,7 @@ class Scatterer(object):
         range_min = np.dot(perp_vec, centered_c_points[1])
         range_max = np.dot(perp_vec, centered_c_points[-1])
 
+
         for i in range(2, len(c_points)):
             index = (1 + (i // 2)) * (-1) ** (i % 2)
             dot = np.dot(perp_vec, centered_c_points[index])
@@ -159,6 +160,7 @@ class Scatterer(object):
                     draw.Circle(d_points[index], c_points[index], touched_circle_radius, touched_circle_colour))
 
         return touched_curve_points
+
 
     def particle_touched_circles(self, dir, r0, r1):
         touched_circle_radius = 5
