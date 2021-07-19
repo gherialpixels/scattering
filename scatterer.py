@@ -19,7 +19,7 @@ def get_particle_set(pos, radius, dir, perp_dir):
 
 class FourierMode(object):
 
-    def __init__(self, a, b, w, rangeA, rangeB):
+    def __init__(self, a, b, w, rangeA=0, rangeB=2*np.pi):
         self.radius = lambda theta: sum([a[i] * np.sin(w[i] * theta) + \
                             b[i] * np.cos(w[i] * theta) for i in range(len(a))])
         self.dradius = lambda theta: sum([a[i] * w[i] * np.cos(w[i] * theta) - \
