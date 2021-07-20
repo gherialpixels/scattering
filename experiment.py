@@ -38,7 +38,6 @@ class Program(object):
         self.s = scatterer.Scatterer(Program.create_scatterer(self.scatter_file))
 
         self.config = args[2:][::-1]
-        print("last term: ", self.config[-1])
         self.time_limit = 0
 
         if self.config.pop() == 'visuals':
@@ -62,7 +61,7 @@ class Program(object):
                     flashlight_dir = mouse_proc.returnFluxDirection()
 
                     # objects
-                    touched_circles = self.s.brute_touched_circles(flashlight_dir)
+                    touched_circles = self.s.local_touched_circles(flashlight_dir)
 
                     scattered_beams = self.s.scattered_beams(flashlight_dir, touched_circles)
 
