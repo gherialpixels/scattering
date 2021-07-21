@@ -1,11 +1,16 @@
 
+import time
 
 import pygame
+
 import numpy as np
 
-import space, scatterer
+import space
+import scatterer
+import draw
 
-class Programme(object):
+
+class MouseProgramme(object):
 
     def __init__(self, type):
         self.type = type
@@ -16,18 +21,113 @@ class Programme(object):
         return (1, 0)
 
 
-class Process(object):
+class Program(object):
 
     """
-    The Process class takes a flux (a list of Particles) and a Scatterer
-    Then, given the process
+    We should have parameters for:
+    - the scatter file
+    - whether we're treating a flux, tangent or scatter simulation
+    - visuals
+    - time interval, duration of time interval
+    - mouse control
     """
 
-    def __init__(self, flux, scatterer):
-        self.flux = flux
-        self.scatterer = scatterer
+    def __init__(self, args):
+        self.filename = args[0]
+        self.scatter_file = args[1]
+        self.s = scatterer.Scatterer(Program.create_scatterer(self.scatter_file))
+
+        self.config = args[2:][::-1]
+        self.time_limit = 0
+
+        if self.config.pop() == 'visuals':
+            self.do_visuals()
+        else:
+            pass
+
+    def do_visuals(self):
+        self.do_timer()
+        display = draw.Display(space.WIDTH, space.HEIGHT, 'Simulation')
+        visuals_type = self.config.pop()
+
+        if visuals_type == 'flux':
+            mouse_proc = MouseProgramme(self.config.pop())
+            touched_points_type = self.config.pop()
+            if touched_points_type == 'local':
+                start_time = time.time()
+                # game loop
+                while time.time() - start_time < self.time_limit:
+                    # mouse position
+                    flashlight_dir = mouse_proc.returnFluxDirection()
+
+                    # objects
+                    touched_circles = self.s.local_touched_circles(flashlight_dir)
+
+                    scattered_beams = self.s.scattered_beams(flashlight_dir, touched_circles)
+
+                    avg_scat_beam = sum(list(map(draw.Line.getGradient, scattered_beams))) / len(scattered_beams)
+                    obj_avg_beam = draw.Line((space.WIDTH / 2, space.HEIGHT / 2), 5 * avg_scat_beam,
+                                             draw.colours['#99FF99'], 3)
+
+                    objects = [self.s] + touched_circles + scattered_beams + [obj_avg_beam]
+
+                    display.event_catcher()
+                    display.paint(objects)
+
+                pygame.quit()
+
+                quit()
+            elif touched_points_type == 'brute':
+                start_time = time.time()
+                # game loop
+                while time.time() - start_time < self.time_limit:
+                    # mouse position
+                    flashlight_dir = mouse_proc.returnFluxDirection()
+
+                    # objects
+                    touched_circles = self.s.brute_touched_circles(flashlight_dir)
+
+                    scattered_beams = self.s.scattered_beams(flashlight_dir, touched_circles)
+
+                    avg_scat_beam = sum(list(map(draw.Line.getGradient, scattered_beams))) / len(scattered_beams)
+                    obj_avg_beam = draw.Line((space.WIDTH / 2, space.HEIGHT / 2), 5 * avg_scat_beam,
+                                             draw.colours['#99FF99'], 3)
+
+                    objects = [self.s] + touched_circles + scattered_beams + [obj_avg_beam]
+
+                    display.event_catcher()
+                    display.paint(objects)
+
+                pygame.quit()
+
+                quit()
+            else:
+                raise ValueError('Have to enter either `local` or `brute`')
+        elif visuals_type == 'surface':
+            pass
+        elif visuals_type == 'tangents':
+            pass
+        else:
+            raise ValueError('Have to enter either `surface`, `tangent` or `flux`')
+
+    def do_timer(self):
+        if self.config.pop() == 'timed':
+            self.time_limit = float(self.config.pop())
+        else:
+            self.time_limit = 3600
+
+    @staticmethod
+    def create_scatterer(filename):
+        mode_lists = []
+        with open(filename, 'r') as f:
+            for line in f.readlines():
+                l = list(map(float, line.split(',')))
+                mode_lists.append(l)
+
+        return scatterer.FourierMode(*zip(*mode_lists))
 
 
+"""
 # LinAlg methods
 
 # intersection method
@@ -68,7 +168,6 @@ def createParticleBeams(particle_group):
     return positions
 
 def setCollisions(particle_group, scat):
-    """
     # BROKEN :/
     collided = set()
     particle_positions = {tuple(particle.pos) for particle in particle_group}
@@ -81,7 +180,6 @@ def setCollisions(particle_group, scat):
                 inter = {point + pos for point in shifted if np.dot(point, point) <= radius ** 2}
                 collided |= inter
 
-    """
 
     collided = set()
     positions = createParticleBeams(particle_group)
@@ -99,3 +197,4 @@ def mouseParticleSet(scat):
         circles.append(scatterer.Particle(collid, (0, 0), 10))
 
     return circles
+"""

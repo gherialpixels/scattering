@@ -1,25 +1,20 @@
 
 
-from experiment import mouseParticle
-
-
 if __name__ == '__main__':
-    import draw, space, scatterer, experiment
-    import pygame
-    import numpy as np
+    import time
 
-    display = draw.Display(space.WIDTH, space.HEIGHT, "Testing line math")
-    x = np.array([space.WIDTH / 4, 0])
-    y = np.array([0, space.WIDTH / 4])
+    start1 = time.time()
+    x = 5
+    for i in range(100000):
+        if x > 6:
+            pass
+    end1 = time.time()
+    t1 = end1 - start1
+    start2 = time.time()
+    y = 5
+    for i in range(100000):
+        pass
+    end2 = time.time()
+    t2 = end2 - start2
 
-    points = [space.centre + x + y, space.centre + x - y, 
-              space.centre - x - y, space.centre - x + y]
-
-    scat = scatterer.GeneralisedScatterer(points, closed=True)
-    while True:
-        circles = experiment.mouseParticleSet(scat)
-        objects = [scat] + circles
-        display.event_catcher()
-        display.paint(objects)
-
-    pygame.quit()
+    print('The time taken by if statement is: ', t1 - t2)

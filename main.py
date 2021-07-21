@@ -35,82 +35,9 @@ fluxes and a separate file for the scatterers. A couple files for the analysis.
 Here the code is checked to see whether or not it is correct
 """
 
-from scatterer import FourierMode
-
 
 if __name__ == '__main__':
-    print("Hello World!")
-
-    import draw, space, scatterer, analysis, experiment
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pygame
-
-    import time
-
-    display = draw.Display(space.WIDTH, space.HEIGHT, 'Simulation')
-
-    # define scatterer
-    rangeA = 0
-    rangeB = 2 * np.pi
-
-    num_modes = 4
-    
-    rs = [30 for i in range(num_modes - 1)] + [100]
-    rc = [200] + [50] + [0 for i in range(num_modes - 2)]
-    w = [i for i in range(num_modes)]
-    gen_mode = FourierMode(rs, rc, w, 0, 2 * np.pi)
-    s = scatterer.Scatterer(gen_mode)
-
-    # define text info object
-    text = draw.Text('beep boop')
-
-    ad = None
-
-    start_time = time.time()
-    mouse_time = []
-    touch_time = []
-    beam_time = []
-    dist_time = []
-    plot_time = []
-    objs_time = []
-
-    prog = experiment.Programme('mouse')
-
-    # game loop
-    while time.time() - start_time < 20:
-        # mouse position
-        flashlight_dir = prog.returnFluxDirection()
-        mouse_time.append(time.time())
-
-        # objects
-        touched_circles = s.brute_touched_circles(flashlight_dir)
-        touch_time.append(time.time())
-
-        scattered_beams = s.scattered_beams(flashlight_dir, touched_circles)
-        beam_time.append(time.time())
-
-        avg_scat_beam = sum(list(map(draw.Line.getGradient, scattered_beams))) / len(scattered_beams)
-        obj_avg_beam = draw.Line((space.WIDTH / 2, space.HEIGHT / 2), 5*avg_scat_beam, draw.colours['#99FF99'], 3)
-
-        objects = [s] + touched_circles + scattered_beams + [obj_avg_beam]
-
-        ad = analysis.AngleDistribution(flashlight_dir, scattered_beams, 0.1)
-        dist_time.append(time.time())
-
-        ad.draw()
-        plot_time.append(time.time())
-
-        display.event_catcher()
-        display.paint(objects)
-        objs_time.append(time.time())
-
-    pygame.quit()
-
-    final_time = time.time()
-
-    timeHandle = analysis.TimeHandler(start_time, final_time, mouse_time, touch_time, beam_time, dist_time, plot_time)
-
-    timeHandle.print_time_diffs()
-
-    quit()
+    import sys
+    import experiment
+    print(sys.argv)
+    p = experiment.Program(sys.argv)
