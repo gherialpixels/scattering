@@ -3,7 +3,7 @@
 ## Description
 
 This program calculates the scattering behaviour of a 2D beam of
-particles colliding with a 2D shape. For now, the scatterer is a
+particles colliding with a 2D shape. For now, the scatterer is
 stationary and rigid is defined by a Fourier series on a circle.
 
 ## How to use
